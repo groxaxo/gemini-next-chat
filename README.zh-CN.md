@@ -101,6 +101,8 @@
 
 - 在 1 分钟内使用 Vercel **免费一键部署**
 - 提供体积极小（~4MB）的跨平台客户端（Windows/MacOS/Linux），可以常驻菜单栏，提升办公效率
+- **多 LLM 支持**：同时支持 Gemini 和 xAI Grok 4.1 模型
+- **多个 TTS 选项**：可选择 Edge Speech 或 Kokoro TTS 进行文字转语音
 - 支持多模态模型，可以理解图片、视频、音频和部分文本文档
 - 语音模式：让您直接与 Gemini 对话，支持 Multimodal Live API
 - 视觉识别，让 Gemini 可以看懂图片内容
@@ -162,6 +164,24 @@
 
 覆盖 Gemini api 请求基本 url。**为了避免服务端代理 url 泄漏，不会覆盖和影响前端页面中的值。**
 
+#### `XAI_API_KEY`（可选）
+
+您的 xAI API 密钥，用于使用 Grok 模型。如果您想使用 Grok 4.1 模型的服务器端 API，这是必需的。
+从 [xAI Console](https://console.x.ai/) 获取您的 API 密钥。
+
+#### `XAI_API_BASE_URL`（可选）
+
+> 默认值：`https://api.x.ai`
+
+如果使用代理，可以覆盖 xAI API 基础 URL。
+
+#### `KOKORO_TTS_API_URL`（可选）
+
+您的 Kokoro TTS API 服务器 URL。如果您想使用 Kokoro TTS 而不是 Edge Speech，您需要部署 Kokoro FastAPI 服务器。
+请参阅 [Kokoro-FastAPI](https://github.com/remsky/Kokoro-FastAPI) 了解部署说明。
+
+> 示例：`http://localhost:8880`
+
 #### `NEXT_PUBLIC_GEMINI_MODEL_LIST`（可选）
 
 自定义模型列表，默认为: all。
@@ -199,6 +219,31 @@
 如果要移除模型列表中的某个模型，请使用 `-` 符号加上模型名称表示移除，即 `all,-existing-model-name`。如果要移除默认模型列表，可以用 `-all` 表示。
 
 如果要设定默认模型，可以使用 `@` 符号加上模型名称表示默认模型，即 `all,@default-model-name`。
+
+### 使用 Grok 4.1 模型
+
+本项目现在支持 xAI 的 Grok 4.1 模型以及 Gemini。要使用 Grok：
+
+1. 从 [xAI Console](https://console.x.ai/) 获取 API 密钥
+2. 在设置页面的"LLM 模型"选项卡中添加您的 xAI API 密钥
+3. 选择"xAI (Grok)"作为您的 LLM 提供商
+4. 选择 Grok 模型（例如，`grok-4.1-fast-reasoning` 或 `grok-4.1-fast-non-reasoning`）
+
+可用的 Grok 模型：
+- **grok-4.1-fast-reasoning**：下一代代理推理，200 万 token 上下文，专为深度思维链任务优化
+- **grok-4.1-fast-non-reasoning**：低延迟、快速响应，适用于客户支持和快速事实检索
+
+### 使用 Kokoro TTS
+
+本项目现在支持 Kokoro TTS 作为 Edge Speech 的替代方案进行文字转语音：
+
+1. 按照 [Kokoro-FastAPI](https://github.com/remsky/Kokoro-FastAPI) 的说明部署 Kokoro FastAPI 服务器
+2. 在设置中，转到"语音服务器"选项卡
+3. 选择"Kokoro TTS"作为您的 TTS 提供商
+4. 输入您的 Kokoro API URL（例如，`http://localhost:8880`）
+5. 从可用的 Kokoro 语音中选择一个
+
+Kokoro TTS 提供高质量的多语言文字转语音，支持英语、日语、中文、韩语等。
 
 ## 开发
 
@@ -289,6 +334,10 @@ vercel 部署后生成的域名在几年前就已经被国内网络屏蔽，但�
 _目前 Multimodal Live API 尚不支持中文语音输出。_
 
 ## 致谢
+
+### 原作者
+
+本项目基于 [Amery2010](https://github.com/u14app/gemini-next-chat) 的优秀作品。我们深深感谢他对开源社区的杰出贡献，以及创建了如此强大而优雅的 Gemini 聊天界面。
 
 ### 技术栈
 
