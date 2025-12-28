@@ -42,6 +42,9 @@ const formSchema = z.object({
   lang: z.string().optional(),
   apiKey: z.string().optional(),
   apiProxy: z.string().optional(),
+  xaiApiKey: z.string().optional(),
+  xaiApiProxy: z.string().optional(),
+  llmProvider: z.enum(['gemini', 'xai']).default('gemini'),
   model: z.string(),
   maxHistoryLength: z.number().gte(0).lte(50).optional().default(0),
   topP: z.number(),
@@ -52,6 +55,8 @@ const formSchema = z.object({
   sttLang: z.string().optional(),
   ttsLang: z.string().optional(),
   ttsVoice: z.string().optional(),
+  ttsProvider: z.enum(['edge', 'kokoro']).default('edge'),
+  kokoroApiUrl: z.string().optional(),
   autoStartRecord: z.boolean().default(false),
   autoStopRecord: z.boolean().default(false),
 })
@@ -336,6 +341,26 @@ function Setting({ open, hiddenTalkPanel, onClose }: SettingProps) {
               <div className="grid w-full gap-4 px-4 py-4 max-sm:px-0">
                 <FormField
                   control={form.control}
+                  name="llmProvider"
+                  render={({ field }) => (
+                    <FormItem className="grid grid-cols-4 items-center gap-4 space-y-0">
+                      <FormLabel className="text-right">{t('llmProvider')}</FormLabel>
+                      <FormControl>
+                        <Select value={field.value} onValueChange={field.onChange}>
+                          <SelectTrigger className="col-span-3">
+                            <SelectValue placeholder="Select LLM Provider" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="gemini">Gemini</SelectItem>
+                            <SelectItem value="xai">xAI (Grok)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
                   name="apiKey"
                   render={({ field }) => (
                     <FormItem className="grid grid-cols-4 items-center gap-4 space-y-0">
@@ -365,6 +390,40 @@ function Setting({ open, hiddenTalkPanel, onClose }: SettingProps) {
                           className="col-span-3"
                           placeholder={GEMINI_API_BASE_URL}
                           disabled={form.getValues().apiKey === ''}
+                          {...field}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="xaiApiKey"
+                  render={({ field }) => (
+                    <FormItem className="grid grid-cols-4 items-center gap-4 space-y-0">
+                      <FormLabel className="text-right">{t('xaiApiKey')}</FormLabel>
+                      <FormControl>
+                        <Input
+                          className="col-span-3"
+                          type="password"
+                          placeholder="xAI API Key (for Grok models)"
+                          {...field}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="xaiApiProxy"
+                  render={({ field }) => (
+                    <FormItem className="grid grid-cols-4 items-center gap-4 space-y-0">
+                      <FormLabel className="text-right">{t('xaiApiProxyUrl')}</FormLabel>
+                      <FormControl>
+                        <Input
+                          className="col-span-3"
+                          placeholder="https://api.x.ai"
+                          disabled={form.getValues().xaiApiKey === ''}
                           {...field}
                         />
                       </FormControl>
@@ -575,6 +634,43 @@ function Setting({ open, hiddenTalkPanel, onClose }: SettingProps) {
             </TabsContent>
             <TabsContent value="voice">
               <div className="grid w-full gap-4 px-4 py-4 max-sm:px-0">
+                <FormField
+                  control={form.control}
+                  name="ttsProvider"
+                  render={({ field }) => (
+                    <FormItem className="grid grid-cols-4 items-center gap-4 space-y-0">
+                      <FormLabel className="text-right">{t('ttsProvider')}</FormLabel>
+                      <FormControl>
+                        <Select value={field.value} onValueChange={field.onChange}>
+                          <SelectTrigger className="col-span-3">
+                            <SelectValue placeholder="Select TTS Provider" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="edge">Edge Speech</SelectItem>
+                            <SelectItem value="kokoro">Kokoro TTS</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="kokoroApiUrl"
+                  render={({ field }) => (
+                    <FormItem className="grid grid-cols-4 items-center gap-4 space-y-0">
+                      <FormLabel className="text-right">{t('kokoroApiUrl')}</FormLabel>
+                      <FormControl>
+                        <Input
+                          className="col-span-3"
+                          placeholder="http://localhost:8880"
+                          disabled={form.getValues().ttsProvider !== 'kokoro'}
+                          {...field}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
                 <FormField
                   control={form.control}
                   name="sttLang"

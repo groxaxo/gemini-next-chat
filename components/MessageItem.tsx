@@ -162,23 +162,42 @@ function MessageItem(props: Props) {
   const handleSpeak = useCallback(async () => {
     if (!contentRef.current) return false
 
-    const { lang, ttsLang, ttsVoice } = useSettingStore.getState()
+    const { lang, ttsLang, ttsVoice, ttsProvider, kokoroApiUrl } = useSettingStore.getState()
     const content = convert(contentRef.current.innerHTML, {
       wordwrap: false,
       selectors: [{ selector: 'ul', options: { itemPrefix: '  ' } }],
     })
     const sentences = mergeSentences(sentenceSegmentation(content, lang), 100)
-    const edgeSpeech = new EdgeSpeech({ locale: ttsLang })
     const audioStream = new AudioStream()
 
-    for (const sentence of sentences) {
-      const response = await edgeSpeech.create({
-        input: sentence,
-        options: { voice: ttsVoice },
-      })
-      if (response) {
-        const audioData = await response.arrayBuffer()
-        audioStream.play({ audioData })
+    if (ttsProvider === 'kokoro' && kokoroApiUrl) {
+      // Use Kokoro TTS
+      const { default: KokoroTTS } = await import('@/utils/KokoroTTS')
+      const kokoroTTS = new KokoroTTS(kokoroApiUrl, ttsVoice)
+      
+      for (const sentence of sentences) {
+        const response = await kokoroTTS.create({
+          input: sentence,
+          voice: ttsVoice,
+        })
+        if (response) {
+          const audioData = await response.arrayBuffer()
+          audioStream.play({ audioData })
+        }
+      }
+    } else {
+      // Use Edge Speech (default)
+      const edgeSpeech = new EdgeSpeech({ locale: ttsLang })
+      
+      for (const sentence of sentences) {
+        const response = await edgeSpeech.create({
+          input: sentence,
+          options: { voice: ttsVoice },
+        })
+        if (response) {
+          const audioData = await response.arrayBuffer()
+          audioStream.play({ audioData })
+        }
       }
     }
   }, [])
