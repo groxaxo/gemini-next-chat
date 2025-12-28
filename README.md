@@ -318,6 +318,10 @@ If you deploy the project in a subdirectory and encounter resource loading failu
 
 ## Acknowledgments
 
+### Original Creator
+
+This project is a fork of the excellent work by [Amery2010](https://github.com/u14app/gemini-next-chat). We are deeply grateful for their outstanding contribution to the open-source community and for creating such a powerful and elegant Gemini chat interface.
+
 ### Technology Stack
 
 - [Next.js](https://nextjs.org/)
