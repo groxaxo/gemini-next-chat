@@ -19,11 +19,16 @@ declare global {
     password: string
     apiKey: string
     apiProxy: string
+    xaiApiKey: string
+    xaiApiProxy: string
     model: string
+    llmProvider: 'gemini' | 'xai'
     lang: string
     sttLang: string
     ttsLang: string
     ttsVoice: string
+    ttsProvider: 'edge' | 'kokoro'
+    kokoroApiUrl: string
     talkMode: 'chat' | 'voice'
     maxHistoryLength: number
     assistantIndexUrl: string

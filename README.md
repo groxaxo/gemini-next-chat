@@ -101,6 +101,8 @@ A cross-platform application client that supports a permanent menu bar, doubling
 
 - **Deploy for free with one-click** on Vercel in under 1 minute
 - Provides a very small (~4MB) cross-platform client (Windows/MacOS/Linux), can stay in the menu bar to improve office efficiency
+- **Multi-LLM support**: Works with both Gemini and xAI Grok 4.1 models
+- **Multiple TTS options**: Choose between Edge Speech or Kokoro TTS for text-to-speech
 - Supports multi-modal models and can understand images, videos, audios and some text documents
 - Talk mode: Let you talk directly to Gemini, support Multimodal Live API
 - Visual recognition allows Gemini to understand the content of the picture
@@ -162,6 +164,24 @@ Supports multiple keys, each key is separated by `,`, i.e. `key1,key2,key3`
 
 Override the Gemini api request base url. **In order to avoid server-side proxy url leakage, the value in the front-end page will not be overwritten and affected.**
 
+#### `XAI_API_KEY` (optional)
+
+Your xAI API key for using Grok models. This is required if you want to use the server-side API for Grok 4.1 models.
+Get your API key from [xAI Console](https://console.x.ai/).
+
+#### `XAI_API_BASE_URL` (optional)
+
+> Default: `https://api.x.ai`
+
+Override the xAI API base URL if using a proxy.
+
+#### `KOKORO_TTS_API_URL` (optional)
+
+URL for your Kokoro TTS API server. If you want to use Kokoro TTS instead of Edge Speech, you need to deploy a Kokoro FastAPI server.
+See [Kokoro-FastAPI](https://github.com/remsky/Kokoro-FastAPI) for deployment instructions.
+
+> Example: `http://localhost:8880`
+
 #### `NEXT_PUBLIC_GEMINI_MODEL_LIST` (optional)
 
 Custom model list, default: all.
@@ -199,6 +219,31 @@ If you need to add a new model, please directly write the model name `all,new-mo
 If you want to remove a model from the model list, use the `-` symbol followed by the model name to indicate removal, i.e. `all,-existing-model-name`. If you want to remove the default model list, you can use `-all`.
 
 If you want to set a default model, you can use the `@` symbol plus the model name to indicate the default model, that is, `all,@default-model-name`.
+
+### Using Grok 4.1 Models
+
+This project now supports xAI's Grok 4.1 models alongside Gemini. To use Grok:
+
+1. Get an API key from [xAI Console](https://console.x.ai/)
+2. Add your xAI API key in the Settings page under the "LLM Model" tab
+3. Select "xAI (Grok)" as your LLM Provider
+4. Choose a Grok model (e.g., `grok-4.1-fast-reasoning` or `grok-4.1-fast-non-reasoning`)
+
+Available Grok models:
+- **grok-4.1-fast-reasoning**: Next-gen agentic reasoning with 2M token context, optimized for deep chain-of-thought tasks
+- **grok-4.1-fast-non-reasoning**: Low-latency, fast responses ideal for customer support and quick fact retrieval
+
+### Using Kokoro TTS
+
+This project now supports Kokoro TTS as an alternative to Edge Speech for text-to-speech:
+
+1. Deploy a Kokoro FastAPI server following the instructions at [Kokoro-FastAPI](https://github.com/remsky/Kokoro-FastAPI)
+2. In Settings, go to the "Voice Server" tab
+3. Select "Kokoro TTS" as your TTS Provider
+4. Enter your Kokoro API URL (e.g., `http://localhost:8880`)
+5. Select a voice from the available Kokoro voices
+
+Kokoro TTS provides high-quality, multi-language text-to-speech with support for English, Japanese, Chinese, Korean, and more.
 
 ## Development
 

@@ -9,6 +9,8 @@ export const Model: Record<string, string> = {
   'gemini-1.5-flash-latest': 'Gemini 1.5 Flash Latest',
   'gemini-1.5-flash-8b': 'Gemini 1.5 Flash-8B',
   'gemini-1.5-flash-8b-latest': 'Gemini 1.5 Flash-8B Latest',
+  'grok-4.1-fast-reasoning': 'Grok 4.1 Fast Reasoning',
+  'grok-4.1-fast-non-reasoning': 'Grok 4.1 Fast Non-Reasoning',
 }
 
 export const OldVisionModel = ['gemini-pro-vision', 'gemini-1.0-pro-vision-latest']

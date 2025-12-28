@@ -28,6 +28,8 @@ import { usePluginStore } from '@/store/plugin'
 import { pluginHandle } from '@/plugins'
 import i18n from '@/utils/i18n'
 import chat, { type RequestProps } from '@/utils/chat'
+import xaiChat, { type XAIChatRequestProps } from '@/utils/xaiChat'
+import { convertXAIStreamToGemini } from '@/utils/xaiStreamAdapter'
 import { summarizePrompt, getVoiceModelPrompt, getSummaryPrompt, getTalkAudioPrompt } from '@/utils/prompt'
 import AudioStream from '@/utils/AudioStream'
 import PromiseQueue from '@/utils/PromiseQueue'
@@ -189,32 +191,89 @@ export default function Home() {
 
   const fetchAnswer = useCallback(
     async ({ messages, model, onResponse, onFunctionCall, onError }: AnswerParams) => {
-      const { apiKey, apiProxy, password, topP, topK, temperature, maxOutputTokens, safety } =
-        useSettingStore.getState()
+      const { 
+        apiKey, 
+        apiProxy, 
+        xaiApiKey, 
+        xaiApiProxy, 
+        llmProvider, 
+        password, 
+        topP, 
+        topK, 
+        temperature, 
+        maxOutputTokens, 
+        safety 
+      } = useSettingStore.getState()
       const { tools } = usePluginStore.getState()
-      const generationConfig: RequestProps['generationConfig'] = { topP, topK, temperature, maxOutputTokens }
+      
       setErrorMessage('')
       setIsThinking(true)
-      const config: RequestProps = {
-        messages,
-        apiKey,
-        model,
-        generationConfig,
-        safety,
-      }
-      if (systemInstruction) config.systemInstruction = systemInstruction
-      if (talkMode === 'voice') {
-        config.systemInstruction = `${getVoiceModelPrompt()}\n\n${systemInstruction}`
-      }
-      if (tools.length > 0 && !isThinkingModel && !isLiteModel) config.tools = [{ functionDeclarations: tools }]
-      if (apiKey !== '') {
-        config.baseUrl = apiProxy || GEMINI_API_BASE_URL
-      } else {
-        config.apiKey = encodeToken(password)
-        config.baseUrl = '/api/google'
-      }
+      
+      // Check if model is a Grok model
+      const isGrokModel = model.startsWith('grok-')
+      const useXAI = isGrokModel || llmProvider === 'xai'
+      
       try {
-        const stream = await chat(config)
+        let stream: ReadableStream | AsyncGenerator<any, any, any> | null = null
+        
+        if (useXAI) {
+          // Use xAI/Grok
+          const xaiGenerationConfig: XAIChatRequestProps['generationConfig'] = { 
+            topP, 
+            temperature, 
+            maxOutputTokens 
+          }
+          const xaiConfig: XAIChatRequestProps = {
+            messages,
+            model,
+            generationConfig: xaiGenerationConfig,
+            stream: true,
+          }
+          if (systemInstruction) xaiConfig.systemInstruction = systemInstruction
+          if (talkMode === 'voice') {
+            xaiConfig.systemInstruction = `${getVoiceModelPrompt()}\n\n${systemInstruction}`
+          }
+          if (xaiApiKey !== '') {
+            xaiConfig.apiKey = xaiApiKey
+            xaiConfig.baseUrl = xaiApiProxy || 'https://api.x.ai'
+          } else {
+            // Use server-side API
+            xaiConfig.baseUrl = '/api/xai'
+          }
+          stream = await xaiChat(xaiConfig)
+        } else {
+          // Use Gemini
+          const generationConfig: RequestProps['generationConfig'] = { topP, topK, temperature, maxOutputTokens }
+          const config: RequestProps = {
+            messages,
+            apiKey,
+            model,
+            generationConfig,
+            safety,
+          }
+          if (systemInstruction) config.systemInstruction = systemInstruction
+          if (talkMode === 'voice') {
+            config.systemInstruction = `${getVoiceModelPrompt()}\n\n${systemInstruction}`
+          }
+          if (tools.length > 0 && !isThinkingModel && !isLiteModel) config.tools = [{ functionDeclarations: tools }]
+          if (apiKey !== '') {
+            config.baseUrl = apiProxy || GEMINI_API_BASE_URL
+          } else {
+            config.apiKey = encodeToken(password)
+            config.baseUrl = '/api/google'
+          }
+          stream = await chat(config)
+        }
+        
+        if (!stream) {
+          throw new Error('Failed to get response stream')
+        }
+        
+        // Convert xAI stream to Gemini format if using xAI
+        const processedStream = useXAI && stream instanceof ReadableStream 
+          ? convertXAIStreamToGemini(stream as ReadableStream) 
+          : stream
+        
         let thinking = false
         if (isThinkingModel) thinking = true
 
@@ -273,7 +332,7 @@ export default function Home() {
 
         const functionCalls: FunctionCall[][] = []
 
-        for await (const chunk of stream) {
+        for await (const chunk of processedStream as AsyncGenerator<any, any, any>) {
           if (stopGeneratingRef.current) {
             writer.close()
             thoughtWriter.close()

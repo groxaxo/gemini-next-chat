@@ -178,5 +178,10 @@
   "addEmojis": "Add Emojis",
   "moreTools": "More Tools",
   "chatContentCleared": "Chat content cleared",
-  "undo": "Undo"
+  "undo": "Undo",
+  "llmProvider": "LLM Provider",
+  "xaiApiKey": "xAI API Key",
+  "xaiApiProxyUrl": "xAI API Proxy URL",
+  "ttsProvider": "TTS Provider",
+  "kokoroApiUrl": "Kokoro API URL"
 }
