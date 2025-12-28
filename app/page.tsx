@@ -214,7 +214,7 @@ export default function Home() {
       const useXAI = isGrokModel || llmProvider === 'xai'
       
       try {
-        let stream: ReadableStream | null = null
+        let stream: ReadableStream | AsyncGenerator<any, any, any> | null = null
         
         if (useXAI) {
           // Use xAI/Grok
@@ -270,7 +270,9 @@ export default function Home() {
         }
         
         // Convert xAI stream to Gemini format if using xAI
-        const processedStream = useXAI ? convertXAIStreamToGemini(stream) : stream
+        const processedStream = useXAI && stream instanceof ReadableStream 
+          ? convertXAIStreamToGemini(stream as ReadableStream) 
+          : stream
         
         let thinking = false
         if (isThinkingModel) thinking = true
@@ -330,7 +332,7 @@ export default function Home() {
 
         const functionCalls: FunctionCall[][] = []
 
-        for await (const chunk of processedStream) {
+        for await (const chunk of processedStream as AsyncGenerator<any, any, any>) {
           if (stopGeneratingRef.current) {
             writer.close()
             thoughtWriter.close()

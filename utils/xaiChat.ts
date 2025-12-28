@@ -1,5 +1,3 @@
-import type { Message } from '@/types'
-
 export type XAIChatRequestProps = {
   model: string
   systemInstruction?: string
